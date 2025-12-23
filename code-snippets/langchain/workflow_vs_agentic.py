@@ -1,10 +1,10 @@
 """
 Workflow vs Agentic 对比示例
 
-运行前安装依赖：
-pip install langchain langchain-openai python-dotenv
-
-配置：在项目根目录创建 .env 文件（已在 .gitignore 中）
+运行前：
+cd ai-agent-learning
+source .venv/bin/activate
+python code-snippets/langchain/workflow_vs_agentic.py
 """
 
 import os
@@ -12,9 +12,8 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain.agents import create_react_agent, AgentExecutor
 from langchain_core.tools import tool
-from langchain import hub
+from langgraph.prebuilt import create_react_agent
 
 # 加载环境变量
 load_dotenv()
@@ -52,16 +51,16 @@ def workflow_example():
     
     # Step 1: 分类
     classify_prompt = ChatPromptTemplate.from_template(
-        "将以下问题分类为 'technical' 或 'general':\n{question}\n只输出分类结果。"
+        "将以下问题分类为 'technical' 或 'general':\n{question}\n只输出分类结果，不要其他内容。"
     )
     
     # Step 2: 根据分类选择不同的回答模板
     technical_prompt = ChatPromptTemplate.from_template(
-        "作为技术专家，详细回答这个技术问题:\n{question}"
+        "作为技术专家，用2-3句话简洁回答这个技术问题:\n{question}"
     )
     
     general_prompt = ChatPromptTemplate.from_template(
-        "用简单易懂的语言回答这个问题:\n{question}"
+        "用简单易懂的语言，2-3句话回答这个问题:\n{question}"
     )
     
     # 构建 Chain（固定流程）
@@ -72,7 +71,7 @@ def workflow_example():
     def run_workflow(question: str) -> str:
         # 流程是写死的：先分类，再根据结果选择
         category = classify_chain.invoke({"question": question})
-        print(f"[Workflow] 分类结果: {category}")
+        print(f"[Workflow] 分类结果: {category.strip()}")
         
         if "technical" in category.lower():
             return technical_chain.invoke({"question": question})
@@ -89,22 +88,22 @@ def workflow_example():
 @tool
 def search_web(query: str) -> str:
     """搜索网络获取最新信息"""
-    # 模拟搜索结果
-    return f"搜索结果: 关于 '{query}' 的最新信息..."
+    return f"搜索结果: 关于 '{query}' 的最新信息是..."
 
 @tool
 def calculate(expression: str) -> str:
-    """计算数学表达式"""
+    """计算数学表达式，如 '2+3*4'"""
     try:
-        return str(eval(expression))
-    except:
-        return "计算错误"
+        result = eval(expression)
+        return f"计算结果: {expression} = {result}"
+    except Exception as e:
+        return f"计算错误: {e}"
 
 @tool
 def get_weather(city: str) -> str:
-    """获取城市天气"""
+    """获取指定城市的天气信息"""
     # 模拟天气数据
-    return f"{city}今天晴，温度 25°C"
+    return f"{city}今天晴，温度 25°C，适合外出"
 
 
 def agentic_example():
@@ -119,14 +118,10 @@ def agentic_example():
     llm = get_llm()
     tools = [search_web, calculate, get_weather]
     
-    # 使用 ReAct 提示词模板
-    prompt = hub.pull("hwchase17/react")
+    # 使用 LangGraph 的 ReAct Agent
+    agent = create_react_agent(llm, tools)
     
-    # 创建 Agent（LLM 自己决定流程）
-    agent = create_react_agent(llm, tools, prompt)
-    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
-    
-    return agent_executor
+    return agent
 
 
 # ============================================================
@@ -137,37 +132,36 @@ if __name__ == "__main__":
     # 检查 API Key
     if not IFLOW_API_KEY:
         print("错误: 请在 .env 文件中配置 IFLOW_API_KEY")
-        print("示例:")
-        print("  IFLOW_API_KEY=sk-xxx")
-        print("  IFLOW_BASE_URL=https://apis.iflow.cn/v1")
-        print("  IFLOW_MODEL=TBStars2-200B-A13B")
         exit(1)
     
     print(f"使用模型: {IFLOW_MODEL}")
     print(f"API 地址: {IFLOW_BASE_URL}")
     print()
     
+    # ========== Workflow 示例 ==========
     print("=" * 60)
-    print("Workflow 示例")
+    print("Workflow 示例: 固定流程 (分类 → 回答)")
     print("=" * 60)
     
     workflow = workflow_example()
-    
-    # Workflow: 永远按 分类→回答 的流程执行
     result = workflow("Python 的 GIL 是什么？")
-    print(f"结果: {result[:500]}...")
+    print(f"回答: {result}")
     
+    # ========== Agentic 示例 ==========
     print("\n" + "=" * 60)
-    print("Agentic 示例")
+    print("Agentic 示例: LLM 自主决策")
     print("=" * 60)
     
     agent = agentic_example()
     
-    # Agent: 自己决定要不要用工具、用哪个、用几次
+    # Agent 会自己决定：用 get_weather 获取天气，再用 calculate 计算
     result = agent.invoke({
-        "input": "北京今天天气怎么样？如果温度超过20度，帮我算一下 (25-20)*1.5"
+        "messages": [{"role": "user", "content": "北京今天天气怎么样？如果温度超过20度，帮我算一下 (25-20)*1.5"}]
     })
-    print(f"结果: {result['output']}")
+    
+    # 提取最终回答
+    final_message = result["messages"][-1].content
+    print(f"回答: {final_message}")
 
 
 # ============================================================
