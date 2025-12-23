@@ -2,15 +2,37 @@
 Workflow vs Agentic 对比示例
 
 运行前安装依赖：
-pip install langchain langchain-openai
+pip install langchain langchain-openai python-dotenv
+
+配置：在项目根目录创建 .env 文件（已在 .gitignore 中）
 """
 
+import os
+from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain.agents import create_react_agent, AgentExecutor
 from langchain_core.tools import tool
 from langchain import hub
+
+# 加载环境变量
+load_dotenv()
+
+# 心流平台配置
+IFLOW_API_KEY = os.getenv("IFLOW_API_KEY")
+IFLOW_BASE_URL = os.getenv("IFLOW_BASE_URL", "https://apis.iflow.cn/v1")
+IFLOW_MODEL = os.getenv("IFLOW_MODEL", "TBStars2-200B-A13B")
+
+
+def get_llm():
+    """获取配置好的 LLM 实例"""
+    return ChatOpenAI(
+        model=IFLOW_MODEL,
+        openai_api_key=IFLOW_API_KEY,
+        openai_api_base=IFLOW_BASE_URL,
+    )
+
 
 # ============================================================
 # 示例 1: Workflow 模式 - 固定流程
@@ -26,7 +48,7 @@ def workflow_example():
     - 开发者控制流程走向
     - 可预测、易调试
     """
-    llm = ChatOpenAI(model="gpt-4o-mini")
+    llm = get_llm()
     
     # Step 1: 分类
     classify_prompt = ChatPromptTemplate.from_template(
@@ -50,6 +72,7 @@ def workflow_example():
     def run_workflow(question: str) -> str:
         # 流程是写死的：先分类，再根据结果选择
         category = classify_chain.invoke({"question": question})
+        print(f"[Workflow] 分类结果: {category}")
         
         if "technical" in category.lower():
             return technical_chain.invoke({"question": question})
@@ -93,7 +116,7 @@ def agentic_example():
     - 可以循环：思考 → 行动 → 观察 → 再思考
     - 灵活但不可预测
     """
-    llm = ChatOpenAI(model="gpt-4o-mini")
+    llm = get_llm()
     tools = [search_web, calculate, get_weather]
     
     # 使用 ReAct 提示词模板
@@ -111,6 +134,19 @@ def agentic_example():
 # ============================================================
 
 if __name__ == "__main__":
+    # 检查 API Key
+    if not IFLOW_API_KEY:
+        print("错误: 请在 .env 文件中配置 IFLOW_API_KEY")
+        print("示例:")
+        print("  IFLOW_API_KEY=sk-xxx")
+        print("  IFLOW_BASE_URL=https://apis.iflow.cn/v1")
+        print("  IFLOW_MODEL=TBStars2-200B-A13B")
+        exit(1)
+    
+    print(f"使用模型: {IFLOW_MODEL}")
+    print(f"API 地址: {IFLOW_BASE_URL}")
+    print()
+    
     print("=" * 60)
     print("Workflow 示例")
     print("=" * 60)
@@ -119,7 +155,7 @@ if __name__ == "__main__":
     
     # Workflow: 永远按 分类→回答 的流程执行
     result = workflow("Python 的 GIL 是什么？")
-    print(f"结果: {result[:200]}...")
+    print(f"结果: {result[:500]}...")
     
     print("\n" + "=" * 60)
     print("Agentic 示例")
@@ -128,10 +164,6 @@ if __name__ == "__main__":
     agent = agentic_example()
     
     # Agent: 自己决定要不要用工具、用哪个、用几次
-    # 问题1: 可能直接回答（不用工具）
-    # 问题2: 可能用 calculate
-    # 问题3: 可能用 search_web + get_weather
-    
     result = agent.invoke({
         "input": "北京今天天气怎么样？如果温度超过20度，帮我算一下 (25-20)*1.5"
     })
