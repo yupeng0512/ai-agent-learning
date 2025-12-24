@@ -45,3 +45,61 @@ Agentic = 有经验的员工
 ### 代码示例
 
 见 `code-snippets/langchain/workflow_vs_agentic.py`
+
+---
+
+## 主题：Prompt 格式对比（XML vs Markdown vs 自然语言）
+
+### 核心结论
+
+**对 Claude 来说，XML 标签确实更有效**，但不是绝对的。
+
+### 格式对比
+
+| 格式 | 优势 | 劣势 | 适用场景 |
+|------|------|------|---------|
+| **XML** | 边界清晰、嵌套结构、输出稳定 | 写起来繁琐 | 复杂任务、多段输入 |
+| **Markdown** | 人类可读性好 | 边界模糊 | 简单格式化输出 |
+| **自然语言** | 最灵活、最自然 | 结构不明确 | 简单任务 |
+
+### 实验结果
+
+运行 `prompt_format_comparison.py` 对比三种格式：
+
+| 格式 | 输入 tokens | 输出 tokens | 输出特点 |
+|------|------------|------------|---------|
+| 自然语言 | 70 | 698 | 格式自由，结构不固定 |
+| Markdown | 95 | 1170 | 按 Markdown 格式输出 |
+| XML | 208 | 959 | **严格按定义的标签结构输出** |
+
+### 为什么 XML 对 Claude 效果更好？
+
+1. **训练数据**：Claude 训练时大量使用 XML 标签结构
+2. **边界清晰**：`<tag>...</tag>` 比 `## 标题` 更明确
+3. **嵌套支持**：XML 天然支持复杂嵌套结构
+4. **解析友好**：模型更容易理解输入的不同部分
+
+### XML Prompt 常用标签
+
+```xml
+<role>角色定义</role>
+<task>
+  <objective>任务目标</objective>
+  <constraints>约束条件</constraints>
+</task>
+<context>背景信息</context>
+<input>用户输入</input>
+<output_format>输出格式要求</output_format>
+<examples>示例</examples>
+```
+
+### 使用建议
+
+1. **简单任务** → 自然语言即可
+2. **需要格式化输出** → Markdown
+3. **复杂任务/多段输入/需要稳定输出** → XML
+4. **混合使用**：XML 做结构，内容用 Markdown
+
+### 代码示例
+
+见 `code-snippets/langchain/prompt_format_comparison.py`
