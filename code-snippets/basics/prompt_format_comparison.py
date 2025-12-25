@@ -4,7 +4,7 @@ Prompt 格式对比实验：XML vs Markdown vs 自然语言
 运行：
 cd ai-agent-learning
 source .venv/bin/activate
-python code-snippets/langchain/prompt_format_comparison.py
+python code-snippets/basics/prompt_format_comparison.py
 """
 
 import os

@@ -102,4 +102,4 @@ Agentic = 有经验的员工
 
 ### 代码示例
 
-见 `code-snippets/langchain/prompt_format_comparison.py`
+见 `code-snippets/basics/prompt_format_comparison.py`
