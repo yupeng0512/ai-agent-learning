@@ -2,13 +2,15 @@
 
 ## 学习目标
 - [x] 掌握 AI Agent 核心概念
-- [ ] 熟练使用主流框架 (LangChain, AutoGen, CrewAI)
+- [x] 熟练使用 LangChain 框架
 - [ ] 完成 3 个实战项目
 - [ ] 准备 AI Agent 相关面试
 
 ## 当前阶段
-**阶段**: LangChain 深入学习 → 下一步：RAG
+**阶段**: 基础学习完成 → 进入实战项目阶段
 **开始日期**: 2025-12-23
+
+---
 
 ## 学习记录
 
@@ -38,6 +40,21 @@
   - [x] ChatMessageHistory / RunnableWithMessageHistory
   - [x] Agent + MemorySaver
   - [x] **session_id 隔离原理**
+- [x] RAG 基础
+  - [x] Embedding 原理（向量搜索 vs 关键词搜索）
+  - [x] 文档切分策略（chunk_size/overlap）
+  - [x] FAISS 向量数据库
+  - [x] LangChain RAG Chain
+- [x] Agent + RAG 结合
+  - [x] RAG 封装为 Tool
+  - [x] Agent 自主决定何时检索
+- [x] 高级 Agent 架构
+  - [x] LangGraph 串行/并行执行
+  - [x] Multi-Agent 协作
+  - [x] A2A 协议（Google 2025）
+  - [x] MCP vs A2A 对比
+
+---
 
 ## 技能清单
 
@@ -47,17 +64,74 @@
 | Agent 架构设计 | 🟢 已掌握 | 见 notes/agent-architecture-design.md |
 | LangChain 基础 | 🟢 已掌握 | LCEL/Tool/Memory |
 | LangChain Agent | 🟢 已掌握 | ReAct/Tool 选择机制 |
-| AutoGen | ⚪ 未开始 | |
-| CrewAI | ⚪ 未开始 | |
-| RAG | ⚪ 未开始 | 下一步 |
-| Multi-Agent | 🟡 进行中 | 理论已掌握，待实战 |
+| RAG | 🟢 已掌握 | Embedding/向量搜索/文档切分 |
+| Multi-Agent | 🟢 已掌握 | 串行/并行/LangGraph |
+| MCP 协议 | 🟡 了解 | 概念清楚，待实战 |
+| A2A 协议 | 🟡 了解 | 概念清楚，待实战 |
+| AutoGen | ⚪ 未开始 | 可选扩展 |
+| CrewAI | ⚪ 未开始 | 可选扩展 |
+
+---
 
 ## 里程碑
 
-- [x] 🎯 完成入门项目 (01-simple-agent)
-- [ ] 🎯 完成 RAG 项目 (02-rag-agent)
-- [ ] 🎯 完成多智能体项目 (03-multi-agent)
+- [x] 🎯 完成基础学习（7 课时）
+- [ ] 🎯 完成项目1：智能文档问答系统
+- [ ] 🎯 完成项目2：代码助手 Agent
+- [ ] 🎯 完成项目3：自定义项目（待定）
 - [ ] 🎯 通过模拟面试
+
+---
+
+## 实战项目规划
+
+### 项目 1：智能文档问答系统 ⏳ 下一步
+**目标**：上传文档 → 构建知识库 → 智能问答
+**技术栈**：
+- LangChain + RAG
+- FAISS 向量数据库
+- Gradio/Streamlit 前端
+**核心功能**：
+- [ ] 支持 PDF/Markdown/TXT 上传
+- [ ] 自动构建向量知识库
+- [ ] 多轮对话问答
+- [ ] 引用来源展示
+
+### 项目 2：代码助手 Agent
+**目标**：代码审查 + Bug 检测 + 优化建议
+**技术栈**：
+- LangGraph Multi-Agent
+- 并行执行
+**核心功能**：
+- [ ] 代码风格检查
+- [ ] 潜在 Bug 检测
+- [ ] 安全漏洞扫描
+- [ ] 优化建议生成
+
+### 项目 3：自定义项目 💡 待定
+**目标**：你的创意项目
+**想法记录**：
+- （待补充）
+
+---
+
+## 代码示例索引
+
+| 示例 | 文件 | 知识点 |
+|------|------|--------|
+| LangChain 基础 | `01_langchain_basics.py` | LCEL/Parser/Streaming |
+| Tool 和 Agent | `02_tools_and_agents.py` | @tool/ReAct 循环 |
+| Tool 元数据 | `03_tool_prompt_inspection.py` | LLM 如何看 Tool |
+| Memory | `04_memory.py` | 对话历史/session_id |
+| RAG 基础 | `05_rag_basics.py` | Embedding/向量搜索 |
+| Agent + RAG | `06_agent_with_rag.py` | RAG 作为 Tool |
+| 高级架构 | `07_advanced_agent_patterns.py` | Multi-Agent/并行/A2A |
+| Workflow vs Agentic | `workflow_vs_agentic.py` | 两种模式对比 |
+| 架构对比 | `agent_architectures.py` | 三种架构实现 |
+| 组合架构 | `code_review_agent.py` | Plan-Execute + Reflexion |
+| 分布式 Agent | `distributed_review_agent.py` | Map-Reduce + 分层反思 |
+
+---
 
 ## 核心笔记索引
 
@@ -65,26 +139,20 @@
 |------|------|------|
 | Agent 架构设计 | `notes/agent-architecture-design.md` | 完整方法论 + 面试话术 |
 
-## 代码示例索引
-
-| 示例 | 文件 | 知识点 |
-|------|------|--------|
-| LangChain 基础 | `code-snippets/langchain/01_langchain_basics.py` | LCEL/Parser/Streaming |
-| Tool 和 Agent | `code-snippets/langchain/02_tools_and_agents.py` | @tool/ReAct 循环 |
-| Tool 元数据 | `code-snippets/langchain/03_tool_prompt_inspection.py` | LLM 如何看 Tool |
-| Memory | `code-snippets/langchain/04_memory.py` | 对话历史/session_id |
-| Workflow vs Agentic | `code-snippets/langchain/workflow_vs_agentic.py` | 两种模式对比 |
-| 架构对比 | `code-snippets/langchain/agent_architectures.py` | 三种架构实现 |
-| 组合架构 | `code-snippets/langchain/code_review_agent.py` | Plan-Execute + Reflexion |
-| 分布式 Agent | `code-snippets/langchain/distributed_review_agent.py` | Map-Reduce + 分层反思 |
+---
 
 ## 下一步计划
 
-1. **RAG（检索增强生成）**
-   - 向量数据库基础
-   - Embedding 模型
-   - 检索 + 生成流程
-   
-2. **LangGraph**
-   - 复杂工作流编排
-   - 状态管理
+1. **项目 1：智能文档问答系统**
+   - 搭建项目框架
+   - 实现文档上传和解析
+   - 构建 RAG 检索链
+   - 添加 Web UI
+
+2. **项目 2：代码助手 Agent**
+   - Multi-Agent 架构设计
+   - 并行检查实现
+   - 结果汇总和报告生成
+
+3. **项目 3：自定义项目**
+   - 等待你的创意想法 💡
