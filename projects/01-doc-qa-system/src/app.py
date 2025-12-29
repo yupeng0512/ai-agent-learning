@@ -17,7 +17,7 @@ import os
 import sys
 import tempfile
 from pathlib import Path
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict, Any
 
 # 添加项目路径
 sys.path.insert(0, str(Path(__file__).parent))
@@ -172,13 +172,13 @@ class DocQAApp:
         
         return f"✅ 已添加 {len(docs)} 个文档块\n📊 知识库状态: 共 {len(self.documents)} 个文档块"
     
-    def chat(self, message: str, history: List[Tuple[str, str]]) -> Tuple[str, List[Tuple[str, str]]]:
+    def chat(self, message: str, history: List) -> Tuple[str, List]:
         """
         对话
         
         Args:
             message: 用户消息
-            history: 对话历史
+            history: 对话历史（新版 Gradio 使用字典格式）
             
         Returns:
             (回复, 更新后的历史)
@@ -205,7 +205,9 @@ class DocQAApp:
             except Exception as e:
                 response = f"❌ 发生错误: {str(e)}"
         
-        history.append((message, response))
+        # 新版 Gradio Chatbot 使用字典格式
+        history.append({"role": "user", "content": message})
+        history.append({"role": "assistant", "content": response})
         return "", history
     
     def clear_knowledge_base(self) -> str:

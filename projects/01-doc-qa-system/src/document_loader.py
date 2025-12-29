@@ -38,6 +38,13 @@ class DocumentLoader:
             chunk_overlap=chunk_overlap,
             separators=["\n\n", "\n", "。", "！", "？", ".", "!", "?", " ", ""],
         )
+        
+        # 支持的文件格式
+        self._supported_formats = [".pdf", ".md", ".txt", ".docx"]
+    
+    def get_supported_formats(self) -> List[str]:
+        """获取支持的文件格式列表"""
+        return self._supported_formats.copy()
     
     def load_file(self, file_path: str) -> List[Document]:
         """

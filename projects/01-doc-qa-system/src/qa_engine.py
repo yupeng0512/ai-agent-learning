@@ -5,6 +5,7 @@
 - RAG 问答链
 - 对话历史管理
 - 引用来源展示
+- Rerank 优化检索效果
 """
 
 import os
@@ -34,6 +35,8 @@ class QAEngine:
         llm,
         retriever,
         system_prompt: Optional[str] = None,
+        use_rerank: bool = False,
+        rerank_type: str = "simple",
     ):
         """
         初始化问答引擎
@@ -42,10 +45,22 @@ class QAEngine:
             llm: 语言模型
             retriever: 检索器
             system_prompt: 系统提示词（可选）
+            use_rerank: 是否使用重排序
+            rerank_type: 重排序类型 ("simple", "llm", "hybrid")
         """
         self.llm = llm
         self.retriever = retriever
         self.chat_history: List = []
+        self.use_rerank = use_rerank
+        self.reranker = None
+        
+        # 初始化重排序器
+        if use_rerank:
+            from reranker import create_reranker
+            self.reranker = create_reranker(
+                reranker_type=rerank_type,
+                llm=llm if rerank_type in ["llm", "hybrid"] else None,
+            )
         
         # 默认系统提示词
         if system_prompt is None:
@@ -92,6 +107,27 @@ class QAEngine:
             | StrOutputParser()
         )
     
+    def _retrieve_with_rerank(self, question: str, k: int = 5) -> List[Document]:
+        """
+        检索并重排序
+        
+        Args:
+            question: 问题
+            k: 返回文档数量
+            
+        Returns:
+            重排序后的文档列表
+        """
+        # 先获取更多候选文档
+        candidates = self.retriever.invoke(question)
+        
+        if not self.use_rerank or not self.reranker or len(candidates) <= k:
+            return candidates[:k]
+        
+        # 重排序
+        reranked = self.reranker.rerank(question, candidates, top_n=k)
+        return [r.document for r in reranked]
+    
     def ask(self, question: str, return_sources: bool = True) -> QAResponse:
         """
         提问
@@ -103,8 +139,14 @@ class QAEngine:
         Returns:
             QAResponse 对象
         """
-        # 获取相关文档
-        sources = self.retriever.invoke(question) if return_sources else []
+        # 获取相关文档（可选重排序）
+        if return_sources:
+            if self.use_rerank:
+                sources = self._retrieve_with_rerank(question)
+            else:
+                sources = self.retriever.invoke(question)
+        else:
+            sources = []
         
         # 生成回答
         answer = self.chain.invoke(question)
