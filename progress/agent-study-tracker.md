@@ -54,6 +54,20 @@
   - [x] A2A 协议（Google 2025）
   - [x] MCP vs A2A 对比
 
+### Day 5 (12/31)
+- [x] RAG 深度原理
+  - [x] 向量检索 vs 协同过滤（相似性与区别）
+  - [x] Embedding 原理深入（Word2Vec → BERT → BGE）
+  - [x] FAISS 索引机制（Flat/IVF/PQ/HNSW）
+  - [x] Rerank 算法（Simple/LLM/Hybrid/Cross-Encoder）
+- [x] 项目1：智能文档问答系统
+  - [x] 文档加载与切分（PDF/MD/TXT/DOCX）
+  - [x] 向量数据库（FAISS + BGE-M3）
+  - [x] RAG 问答引擎
+  - [x] Reranker 重排序（三种实现）
+  - [x] Gradio Web UI
+  - [x] 分批处理（解决 API 限制）
+
 ---
 
 ## 技能清单
@@ -64,7 +78,8 @@
 | Agent 架构设计 | 🟢 已掌握 | 见 notes/agent-architecture-design.md |
 | LangChain 基础 | 🟢 已掌握 | LCEL/Tool/Memory |
 | LangChain Agent | 🟢 已掌握 | ReAct/Tool 选择机制 |
-| RAG | 🟢 已掌握 | Embedding/向量搜索/文档切分 |
+| RAG | 🟢 已掌握 | Embedding/向量搜索/文档切分/Rerank |
+| RAG 深度原理 | 🟢 已掌握 | FAISS索引/Embedding进化/Rerank算法 |
 | Multi-Agent | 🟢 已掌握 | 串行/并行/LangGraph |
 | MCP 协议 | 🟡 了解 | 概念清楚，待实战 |
 | A2A 协议 | 🟡 了解 | 概念清楚，待实战 |
@@ -76,7 +91,7 @@
 ## 里程碑
 
 - [x] 🎯 完成基础学习（7 课时）
-- [ ] 🎯 完成项目1：智能文档问答系统
+- [x] 🎯 完成项目1：智能文档问答系统 ✅ (12/31)
 - [ ] 🎯 完成项目2：代码助手 Agent
 - [ ] 🎯 完成项目3：自定义项目（待定）
 - [ ] 🎯 通过模拟面试
@@ -85,17 +100,22 @@
 
 ## 实战项目规划
 
-### 项目 1：智能文档问答系统 ⏳ 下一步
+### 项目 1：智能文档问答系统 ✅ 已完成
 **目标**：上传文档 → 构建知识库 → 智能问答
 **技术栈**：
 - LangChain + RAG
-- FAISS 向量数据库
-- Gradio/Streamlit 前端
+- FAISS 向量数据库 + BGE-M3 Embedding
+- Gradio 前端
 **核心功能**：
-- [ ] 支持 PDF/Markdown/TXT 上传
-- [ ] 自动构建向量知识库
-- [ ] 多轮对话问答
-- [ ] 引用来源展示
+- [x] 支持 PDF/Markdown/TXT/DOCX 上传
+- [x] 自动构建向量知识库（分批处理）
+- [x] 多轮对话问答
+- [x] Reranker 重排序（三种实现）
+**学到的关键点**：
+- Embedding 进化路线（Word2Vec → BERT → BGE）
+- FAISS 索引类型（Flat/IVF/PQ/HNSW）
+- Rerank 必要性（双塔 vs 交叉编码器）
+- API 限制处理（分批 Embedding）
 
 ### 项目 2：代码助手 Agent
 **目标**：代码审查 + Bug 检测 + 优化建议

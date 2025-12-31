@@ -39,38 +39,68 @@ class VectorStore:
         if persist_directory and Path(persist_directory).exists():
             self._load_from_disk()
     
-    def create_from_documents(self, documents: List[Document]) -> None:
+    def create_from_documents(self, documents: List[Document], batch_size: int = 32) -> None:
         """
-        从文档创建向量数据库
+        从文档创建向量数据库（分批处理以避免 API 限制）
         
         Args:
             documents: 文档列表
+            batch_size: 每批处理的文档数量（SiliconFlow 限制 64，保守用 32）
         """
         from langchain_community.vectorstores import FAISS
         
         if not documents:
             raise ValueError("文档列表不能为空")
         
-        print(f"正在创建向量数据库，共 {len(documents)} 个文档块...")
-        self.vectorstore = FAISS.from_documents(documents, self.embeddings)
+        total = len(documents)
+        print(f"正在创建向量数据库，共 {total} 个文档块...")
+        
+        # 分批处理
+        if total <= batch_size:
+            # 小批量直接处理
+            self.vectorstore = FAISS.from_documents(documents, self.embeddings)
+        else:
+            # 大批量分批处理
+            batches = [documents[i:i + batch_size] for i in range(0, total, batch_size)]
+            print(f"   分 {len(batches)} 批处理（每批 {batch_size} 个）...")
+            
+            # 第一批创建
+            self.vectorstore = FAISS.from_documents(batches[0], self.embeddings)
+            print(f"   ✓ 批次 1/{len(batches)} 完成")
+            
+            # 后续批次添加
+            for i, batch in enumerate(batches[1:], 2):
+                self.vectorstore.add_documents(batch)
+                print(f"   ✓ 批次 {i}/{len(batches)} 完成")
+        
         print("✅ 向量数据库创建完成")
         
         # 如果设置了持久化目录，保存到磁盘
         if self.persist_directory:
             self._save_to_disk()
     
-    def add_documents(self, documents: List[Document]) -> None:
+    def add_documents(self, documents: List[Document], batch_size: int = 32) -> None:
         """
-        添加文档到现有向量数据库
+        添加文档到现有向量数据库（分批处理）
         
         Args:
             documents: 要添加的文档列表
+            batch_size: 每批处理的文档数量
         """
         if self.vectorstore is None:
-            self.create_from_documents(documents)
+            self.create_from_documents(documents, batch_size)
         else:
-            self.vectorstore.add_documents(documents)
-            print(f"✅ 已添加 {len(documents)} 个文档块")
+            total = len(documents)
+            if total <= batch_size:
+                self.vectorstore.add_documents(documents)
+            else:
+                # 分批添加
+                batches = [documents[i:i + batch_size] for i in range(0, total, batch_size)]
+                for i, batch in enumerate(batches, 1):
+                    self.vectorstore.add_documents(batch)
+                    print(f"   ✓ 添加批次 {i}/{len(batches)} 完成")
+            
+            print(f"✅ 已添加 {total} 个文档块")
             
             if self.persist_directory:
                 self._save_to_disk()

@@ -92,13 +92,15 @@ class DocQAApp:
         上传并处理文件
         
         Args:
-            files: 上传的文件列表
+            files: 上传的文件列表（Gradio 6.x 返回文件路径字符串列表）
             
         Returns:
             处理结果消息
         """
         from document_loader import DocumentLoader
         from vector_store import VectorStore
+        
+        print(f"[DEBUG] upload_files 收到: {files}, 类型: {type(files)}")
         
         if not files:
             return "❌ 请选择要上传的文件"
@@ -109,13 +111,27 @@ class DocQAApp:
         
         for file in files:
             try:
-                # Gradio 返回的是临时文件路径
-                file_path = file.name if hasattr(file, 'name') else file
+                # Gradio 6.x 返回的是文件路径字符串
+                if isinstance(file, str):
+                    file_path = file
+                elif hasattr(file, 'name'):
+                    file_path = file.name
+                else:
+                    file_path = str(file)
+                
+                print(f"[DEBUG] 处理文件: {file_path}")
+                
+                if not Path(file_path).exists():
+                    results.append(f"❌ 文件不存在: {file_path}")
+                    continue
+                    
                 docs = loader.load_file(file_path)
                 all_docs.extend(docs)
                 results.append(f"✅ {Path(file_path).name}: {len(docs)} 块")
             except Exception as e:
-                results.append(f"❌ {Path(file_path).name}: {str(e)}")
+                import traceback
+                print(f"[DEBUG] 处理文件出错: {traceback.format_exc()}")
+                results.append(f"❌ 处理失败: {str(e)}")
         
         if all_docs:
             # 创建或更新向量数据库
